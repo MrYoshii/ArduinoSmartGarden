@@ -1,24 +1,4 @@
-    
-    /*Checklist:
-     * Open:
-     * RTC für automatisches licht, bewässern, 
-     * TFT Display für menü (mannuele einstellung an max temp usw)
-     *  berechnung des wachstums?
-     * Helligkeitssensor für lampencheck
-     * webbasierente protokollierung mit kamera
-     * 
-     * 
-     * 
-      
-     
-    
-     * Done:
-     * Automatische bewesserung mit feuchtigkeitssensor
-     * Temperatur und feuchtigkeits messung mit zusatzlüftung
-     * 2 zeilen Display
-     * Pflanzenhöhen erkennung (benachrichtigung?)
-      */
-     
+
     
     #include "DHT.h"
     #include <LiquidCrystal.h>
