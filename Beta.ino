@@ -1,8 +1,6 @@
-
-    
+    #include <Servo.h>
     #include "DHT.h"
     #include <LiquidCrystal.h>
-    #include <SoftwareSerial.h>
 
      
     #define DHTPIN 7     // what pin we're connected to
@@ -11,44 +9,44 @@
     #define heat 6
     #define pumpe A2
     #define feucht A3 //10 pinmode vorher (digital)
-
+    #define feucht2 A4
+    #define servo 13
     
     LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
      
-    int maxHum = 40;
-    int maxTemp = 28;
-    int minHum = 35;
-    int minTemp = 25;
+    int maxHum = 60;
+    int maxTemp = 32;
+    int minHum = 40;
+    int minTemp = 30;
     byte Celsius[8] = {B00100,B01010,B00100,B0000,B00000,B00000,B00000,B00000}; //° Pixel festgelegt!!
     long laenge;
     long cm;
+    int z = 0;
+    int Pflanze1 = 0; //Deklarierung als Integer für Pfalnze 1
+    int Pflanze2 = 0; //Deklarierung als Integer für Pflanze 2
+    int Pflanzemax = 700; //Maximaler Feuchtigkeitswert für Berechnung
     int maxfeuchtigkeitslvl = 400;
     int minfeuchtigkeitslvl = 250;
-    float sensorPin = A0;
-    int a = 0;
+    float sensorPin = A3; //Sensor Pflanze 1 auf Pin Analog 0
+    float sensorPin2 = A4; //Sensor Pflanze 2 auf Pin Analog 1
+    
     DHT dht(DHTPIN, DHTTYPE);
+    Servo myservo;
      
     void setup() {
-      
-      lcd.createChar(0, Celsius); 
-      lcd.begin(16, 2); //2 Zeilen-Display
-      lcd.setCursor(0,0);
-      lcd.write("Temp:"); // String mit Temperatur+ 9 Leerzeilen und Grad
-      lcd.setCursor(14,0);
-      lcd.write((uint8_t)0);// ° zeichen eingefügt
-      lcd.setCursor(15,0);
-      lcd.write("C");
-      
-      //lcd.begin(16, 2);
-      lcd.setCursor(0,1);
-      lcd.write("Humidity:      %"); // String mit Luftfeuchtigkeit + 9 Leerzeilen und %
 
-      pinMode(13,OUTPUT);
+    
+      lcd.begin(16, 2);
       
+      
+      pinMode(13,OUTPUT);
       pinMode(fan, OUTPUT);
       pinMode(heat, OUTPUT);
       pinMode(feucht,OUTPUT);
+      pinMode(feucht2,OUTPUT);
       pinMode(pumpe, OUTPUT);
+      myservo.attach(13); //servo
+      
       Serial.begin(9600);
       
       delay(500); 
@@ -59,29 +57,27 @@
     void loop() {
 
      String DisplayWords;
-     int sensorValue;
-     sensorValue = analogRead(sensorPin);
+     float sensorValue;
+     float sensorValue2; // Pflanze 2 
+     sensorValue = analogRead(sensorPin); 
+     sensorValue2 = analogRead(sensorPin2); //Sensor, als analogwert lesen
      
      Serial.print("Water Level: ");
      Serial.print(String(sensorValue));
+     Serial.print("   Prozent:");
+     Serial.print(Pflanze1);
+     Serial.print("%");
+     Serial.print("     Water Level: ");
+     Serial.print(String(sensorValue));
+     Serial.print("   Prozent:");
+     Serial.print(Pflanze2);
+     Serial.print("%");
+     Serial.print("\n");
 
+     Pflanze1 = 0;
 
-     if (sensorValue <= minfeuchtigkeitslvl){
-
-
-        DisplayWords = ("\n Dry Water it");
-        Serial.print(DisplayWords);
-        Serial.print("\n");
-     }else if (sensorValue >= maxfeuchtigkeitslvl){
-
-      DisplayWords = ("\n Wet, Leave it!");
-      Serial.print(DisplayWords);
-      
-     }else {
-
-        Serial.print(DisplayWords);
-        
-     }
+     Pflanze1 = ((sensorValue*100)/Pflanzemax); //Prozent Berechnung
+     Pflanze2 = ((sensorValue2*100)/Pflanzemax); //Prozent Berechnung
 
      pinMode(9,OUTPUT);
      pinMode(A1,INPUT); //10 pinmode vorher
@@ -92,24 +88,12 @@
      delayMicroseconds(5);
      digitalWrite(9,LOW);
 
-     laenge = pulseIn(A1,HIGH); // 10 pinmode vorher
-
-     cm = (laenge*34)/2000;
-     
-     
-    if (cm <=45) 
-      digitalWrite(13, HIGH);
-      delay(100);
-      digitalWrite(13, LOW);
-      delay(50);
-
   
-      // Aufwärmphase für Temperatursensor (2000 millisekunden)
      delay(2000);
      
-      float h = dht.readHumidity();
-      // Liest die Temperatur in Celsius aus
-      float t = dht.readTemperature();
+     float h = dht.readHumidity();// Liest die Luftfeuchtigkeit in % aus
+      
+     float t = dht.readTemperature();// Liest die Temperatur in Celsius aus
       
       // Prüfen auf Fehler
       if (isnan(h) || isnan(t)) {
@@ -122,50 +106,75 @@
       } else {
          digitalWrite(fan, LOW); 
       }
-
-      if(t > minTemp) {
-          digitalWrite(heat, LOW);
-      } else {
-         digitalWrite(heat, HIGH); 
-      }
-
+      //Temperaturregelung
+      if(t < minTemp) {
+          digitalWrite(heat, HIGH);
+      }if (t >=28 ) {
+         digitalWrite(heat,LOW); 
+     
       if(h < minHum) {
           digitalWrite(feucht, HIGH);
       } else {
          digitalWrite(feucht, LOW); 
+
+      }
       }
 
 
+ 
 
-      if (sensorValue < minfeuchtigkeitslvl) {
-        digitalWrite(pumpe, HIGH);
-        delay (120000); 
-      } else {
-        digitalWrite(pumpe, LOW);
-      }
 
-      
+  if (t >= maxTemp or h >= maxHum)
+      myservo.write(115);
+
+  else{
+      myservo.write(10);
+  }
         
-      
-      /*Serial.print("Humidity: "); 
-      Serial.print(h);
-      Serial.print(" %\t");
-      Serial.print("Temperature: "); 
-      Serial.print(t);
-      Serial.println(" *C ");*/
-
-      //Serial.print(cm);
-      //Serial.print("cm");
-
-      
-      lcd.setCursor(9,0); // 2 Zeilen-Display
-      lcd.print(t); // gibt die Temperatur aus
-      delay(100);
-
-      
-      lcd.setCursor(9,1); // 2 Zeilen-Display
-      lcd.print(h); // gibt die Luftfeuchtigkeit aus
-      delay(100);
-      
     
+if ( z <= 2 ){
+      lcd.createChar(0, Celsius); 
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Temp:"); // String mit Temperatur+ 9 Leerzeilen und Grad
+      lcd.setCursor(14,0);
+      
+      lcd.write((uint8_t)0);// ° zeichen eingefügt
+      lcd.setCursor(15,0);
+      lcd.print("C");
+      lcd.setCursor(10,0); // 2 Zeilen-Display
+      lcd.print(t, 1); // gibt die Temperatur aus
+
+      
+      lcd.setCursor(0,1);
+      lcd.print("Humidity:");      
+      lcd.setCursor(13,1);
+      lcd.print(h);
+      lcd.setCursor(15,1);
+      lcd.print("%");
+      z = z + 1;
+ }
+delay(2000);
+if ( z >= 3 ){
+    lcd.clear();
+    //lcd.begin(16,2);
+    lcd.setCursor(0,0);
+    lcd.print("Pflanze 1:");
+    lcd.setCursor(0,1);
+    lcd.print("Pflanze 2:");
+    lcd.setCursor(12,0);    //Wert wird nach rechts ausgegeben
+    lcd.print(Pflanze1);   //Feuchtigkeitssensor 1
+    lcd.setCursor(12,1);
+    lcd.print(Pflanze2);  //Feuchtigkeitssensor 2
+    lcd.setCursor(15,0);
+    lcd.print("%");
+    lcd.setCursor(15,1);
+    lcd.print("%");
+    z = z + 1;
+}
+if ( z >= 6){
+    z = 0;
+}
+      
     }
+    
