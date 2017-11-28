@@ -14,7 +14,7 @@
     
     LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
      
-    int maxHum = 60;
+    int maxHum = 50;
     int maxTemp = 32;
     int minHum = 40;
     int minTemp = 30;
