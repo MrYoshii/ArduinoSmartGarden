@@ -1,4 +1,3 @@
-    #include <Servo.h>
     #include "DHT.h"
     #include <LiquidCrystal.h>
 
@@ -10,7 +9,6 @@
     #define pumpe A2
     #define feucht A3 //10 pinmode vorher (digital)
     #define feucht2 A4
-    #define servo 13
     
     LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
      
@@ -31,7 +29,6 @@
     float sensorPin2 = A4; //Sensor Pflanze 2 auf Pin Analog 1
     
     DHT dht(DHTPIN, DHTTYPE);
-    Servo myservo;
      
     void setup() {
 
@@ -45,7 +42,6 @@
       pinMode(feucht,OUTPUT);
       pinMode(feucht2,OUTPUT);
       pinMode(pumpe, OUTPUT);
-      myservo.attach(13); //servo
       
       Serial.begin(9600);
       
@@ -62,18 +58,6 @@
      sensorValue = analogRead(sensorPin); 
      sensorValue2 = analogRead(sensorPin2); //Sensor, als analogwert lesen
      
-     Serial.print("Water Level: ");
-     Serial.print(String(sensorValue));
-     Serial.print("   Prozent:");
-     Serial.print(Pflanze1);
-     Serial.print("%");
-     Serial.print("     Water Level: ");
-     Serial.print(String(sensorValue));
-     Serial.print("   Prozent:");
-     Serial.print(Pflanze2);
-     Serial.print("%");
-     Serial.print("\n");
-
      Pflanze1 = 0;
 
      Pflanze1 = ((sensorValue*100)/Pflanzemax); //Prozent Berechnung
@@ -97,7 +81,10 @@
       
       // Prüfen auf Fehler
       if (isnan(h) || isnan(t)) {
-        Serial.println("Failed to read from DHT sensor!");
+        lcd.setCursor(0,0);
+        lcd.print("DHT sensor ERROR!");
+        lcd.setCursor(0,1); // 2 Zeilen-Display
+        lcd.print("pls check sensor");
         return;
       }
       
@@ -121,16 +108,7 @@
       }
 
 
- 
-
-
-  if (t >= maxTemp or h >= maxHum)
-      myservo.write(115);
-
-  else{
-      myservo.write(10);
-  }
-        
+  
     
 if ( z <= 2 ){
       lcd.createChar(0, Celsius); 
