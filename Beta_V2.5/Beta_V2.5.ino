@@ -38,16 +38,15 @@
       lcd.begin(16, 2);
       
       
-      //pinMode(13,OUTPUT);
+
       pinMode(fan, OUTPUT);
       pinMode(heat, OUTPUT);
       pinMode(feucht,INPUT);
       pinMode(feucht2,INPUT);
       pinMode(pumpe, OUTPUT);
-      //pinMode(9, INPUT);
+
       pinMode(wasser, INPUT);
-      //pinMode(9,OUTPUT);
-      //pinMode(A1,INPUT); //10 pinmode vorher
+
       
       Serial.begin(9600);
       
@@ -71,8 +70,7 @@
      Pflanze2 = ((sensorValue2*100)/Pflanzemax); //Prozent Berechnung
 
      lvl = analogRead(wasser);
-     //Serial.println(analogRead(9));
-     Serial.println(lvl);
+
 
      digitalWrite(9,LOW);
      delayMicroseconds(2);
@@ -187,6 +185,6 @@ if(lvl <= 200) {
       lcd.setCursor(0,1);
       lcd.print("");
       } 
-      //Serial.print(wasser);
+      
       }
     
